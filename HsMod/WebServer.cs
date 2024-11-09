@@ -67,11 +67,21 @@ namespace HsMod
         {
             var request = context.Request;
             context.Response.StatusCode = 200;
+            context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            context.Response.Headers.Add("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
             string rawUrLower = request.RawUrl.ToLower();
 
             Utils.MyLogger(BepInEx.Logging.LogLevel.Debug, $"{request.RemoteEndPoint.ToString()} => {request.RawUrl}");
             Utils.MyLogger(BepInEx.Logging.LogLevel.Debug, $"{DateTime.Now.ToString("yyyy/MM/dd_HH:mm:ss")} {request.Url}");
 
+            if (request.HttpMethod == "OPTIONS")
+            {
+                context.Response.StatusCode = 204; // No Content
+                context.Response.OutputStream.Close();
+                return;
+            }
+            
             if (rawUrLower == "/webshell" && request.HttpMethod == "POST" && !shellCommandLock)
             {
                 shellCommandLock = true;
